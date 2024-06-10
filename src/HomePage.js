@@ -5,7 +5,7 @@ import image3 from "./imgs/3.jpg";
 import image4 from "./imgs/4.jpg";
 import image5 from "./imgs/5.jpg";
 import image6 from "./imgs/6.jpg";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaFacebook } from "react-icons/fa";
 import { FaPhoneAlt } from "react-icons/fa";
 import { DayPicker } from "react-day-picker";
@@ -31,6 +31,47 @@ function HomePage() {
   const [showSubOptions, setShowSubOptions] = useState(false);
   const [selectedGadgets, setSelectedGadgets] = useState([]);
   const [hasAfterParty, setHasAfterParty] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const botToken = "7433216671:AAGnNhqqZ_8__moNZBeoX2tO7506sTpt2AE";
+  const chatId = "-4259816805";
+
+  useEffect(() => {
+    // Create an immediately invoked async function to use await within it.
+    (async () => {
+      if (localStorage.getItem("visited") !== "yes") {
+        localStorage.setItem("visited", "yes");
+
+        try {
+          const response = await fetch(
+            `https://api.telegram.org/bot${botToken}/sendMessage`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: "A new visitor arrived on your website!",
+              }),
+            }
+          );
+
+          if (response.ok) {
+            console.log("Booking details sent to Telegram successfully!");
+          } else {
+            console.error(
+              "Failed to send booking details to Telegram:",
+              response.statusText
+            );
+          }
+        } catch (error) {
+          console.error("An error occurred while sending to Telegram:", error);
+        }
+      }
+    })(); // Call the async function immediately
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // Define price variables at the component level
   const ledWallPrices = {
@@ -206,9 +247,14 @@ function HomePage() {
       alert("Please select at least one service and a date.");
       return;
     }
+    if (!fullName || !contactNumber) {
+      alert("Please enter your full name and contact number.");
+      return;
+    }
 
     const formattedMessage = `Hi, I'd like to book the following services on ${selectedDate.toLocaleDateString()}:
-
+Name: ${fullName}
+Contact Number: ${contactNumber}
 ${selectedServices
   .map((service) => {
     let line = `- ${service}`;
@@ -266,6 +312,35 @@ Estimated Total Cost: PHP ${totalCost}
     } finally {
       document.body.removeChild(tempTextArea);
     }
+
+    // *** Send message to Telegram group chat ***
+
+    try {
+      const response = await fetch(
+        `https://api.telegram.org/bot${botToken}/sendMessage`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: formattedMessage,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Booking details sent to Telegram successfully!");
+      } else {
+        console.error(
+          "Failed to send booking details to Telegram:",
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error("An error occurred while sending to Telegram:", error);
+    }
   };
 
   const handleEventKindChange = (event) => {
@@ -319,21 +394,23 @@ Estimated Total Cost: PHP ${totalCost}
     const messengerUrl = `https://m.me/${facebookPageId}?ref=${ref}`;
 
     const text = `Hi, I'd like to book the following services on ${selectedDate.toLocaleDateString()}:
-    ${selectedServices
-      .map((service) => {
-        let line = `- ${service}`;
-        if (service === "Sounds" && soundsOption) {
-          line += ` (${soundsOption}) - PHP ${prices.sounds[soundsOption]}`;
-        } else if (service === "Led Wall" && ledWallSize) {
-          line += ` (${ledWallSize}) - PHP ${prices.ledWall[ledWallSize]}`;
-        } else if (service === "Band Equipments") {
-          line += " - PHP 18000 (no monitor included)";
-        } else if (service === "Backline") {
-          line += " - PHP 20000 (Complete with Monitors)";
-        }
-        return line;
-      })
-      .join("\n")}
+Name: ${fullName}
+Contact Number: ${contactNumber}
+${selectedServices
+  .map((service) => {
+    let line = `- ${service}`;
+    if (service === "Sounds" && soundsOption) {
+      line += ` (${soundsOption}) - PHP ${prices.sounds[soundsOption]}`;
+    } else if (service === "Led Wall" && ledWallSize) {
+      line += ` (${ledWallSize}) - PHP ${prices.ledWall[ledWallSize]}`;
+    } else if (service === "Band Equipments") {
+      line += " - PHP 18000 (no monitor included)";
+    } else if (service === "Backline") {
+      line += " - PHP 20000 (Complete with Monitors)";
+    }
+    return line;
+  })
+  .join("\n")}
     
 Event Kind: ${eventKind}${eventSubOption ? ` (${eventSubOption})` : ""}${
       otherEvent ? ` (Other: ${otherEvent})` : ""
@@ -589,373 +666,416 @@ Estimated Total Cost: PHP ${totalCost}
               </div>
             </div>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+          {!showForm && ( // Show name/contact form initially
             <div>
               <label
-                htmlFor="setupType"
+                htmlFor="fullName"
                 className="block text-black text-4xl lg:text-lg mt-5 mb-5"
               >
-                <b>Select Setup Type:</b>
+                Full Name:
               </label>
-              <select
-                id="setupType"
-                value={setupType}
-                onChange={handleSetupTypeChange}
+              <input
+                type="text"
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
-              >
-                <option value="">Select Setup Type</option>
-                <option value="professional setup">Professional Setup</option>
-                <option value="mobile setup">Mobile Setup</option>
-              </select>
-            </div>
+              />
 
-            <div>
               <label
-                htmlFor="eventKind"
+                htmlFor="contactNumber"
                 className="block text-black text-4xl lg:text-lg mt-5 mb-5"
               >
-                <b>Select Event Kind:</b>
+                Contact Number:
               </label>
-              <select
-                id="eventKind"
-                value={eventKind}
-                onChange={handleEventKindChange}
+              <input
+                type="tel"
+                id="contactNumber"
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
                 className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
+              />
+
+              <button
+                onClick={() => setShowForm(true)}
+                className="mt-8 px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 poppins-extrabold text-6xl lg:text-xl"
               >
-                <option value="">Select Event Kind</option>
-                <option value="debut">Debut</option>
-                <option value="wedding">Wedding</option>
-                <option value="anniversary">Anniversary</option>
-                <option value="christmas party">Christmas Party</option>
-                <option value="others">Others</option>
-              </select>
+                Next
+              </button>
             </div>
+          )}
 
-            {/* Display additional options only when Professional Setup or Mobile Setup is selected */}
-            {showSubOptions && (
+          {showForm && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
                 <label
-                  htmlFor="eventSubOption"
+                  htmlFor="setupType"
                   className="block text-black text-4xl lg:text-lg mt-5 mb-5"
                 >
-                  <b>
-                    {setupType === "professional setup"
-                      ? "Professional Setup"
-                      : "Mobile Setup"}{" "}
-                    Options:
-                  </b>
+                  <b>Select Setup Type:</b>
                 </label>
-                <div className="flex flex-col space-y-2">
-                  {/* Your additional sub-options radio buttons or textboxes can go here */}
-                </div>
-              </div>
-            )}
-
-            {/* Display other event textbox only when Others is selected */}
-            {eventKind === "others" && (
-              <div>
-                <label
-                  htmlFor="otherEvent"
-                  className="block text-black text-4xl lg:text-lg mt-5 mb-5"
-                >
-                  <b>Other Event:</b>
-                </label>
-                <input
-                  type="text"
-                  id="otherEvent"
-                  value={otherEvent}
-                  onChange={handleOtherEventChange}
+                <select
+                  id="setupType"
+                  value={setupType}
+                  onChange={handleSetupTypeChange}
                   className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
-                />
+                >
+                  <option value="">Select Setup Type</option>
+                  <option value="professional setup">Professional Setup</option>
+                  <option value="mobile setup">Mobile Setup</option>
+                </select>
               </div>
-            )}
 
-            {/* Afterparty Checkbox */}
-            <div>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={hasAfterParty}
-                  onChange={handleAfterPartyChange}
-                  className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
-                />
-                <span className="text-black text-4xl lg:text-lg poppins-regular">
-                  Afterparty
-                </span>
-              </label>
-            </div>
-            {/* Checkbox Options */}
-            {["Staging", "Trusses", "Backline", "Roofing"].map((service) => (
-              <div key={service}>
+              <div>
+                <label
+                  htmlFor="eventKind"
+                  className="block text-black text-4xl lg:text-lg mt-5 mb-5"
+                >
+                  <b>Select Event Kind:</b>
+                </label>
+                <select
+                  id="eventKind"
+                  value={eventKind}
+                  onChange={handleEventKindChange}
+                  className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
+                >
+                  <option value="">Select Event Kind</option>
+                  <option value="debut">Debut</option>
+                  <option value="wedding">Wedding</option>
+                  <option value="anniversary">Anniversary</option>
+                  <option value="christmas party">Christmas Party</option>
+                  <option value="others">Others</option>
+                </select>
+              </div>
+
+              {/* Display additional options only when Professional Setup or Mobile Setup is selected */}
+              {showSubOptions && (
+                <div>
+                  <label
+                    htmlFor="eventSubOption"
+                    className="block text-black text-4xl lg:text-lg mt-5 mb-5"
+                  >
+                    <b>
+                      {setupType === "professional setup"
+                        ? "Professional Setup"
+                        : "Mobile Setup"}{" "}
+                      Options:
+                    </b>
+                  </label>
+                  <div className="flex flex-col space-y-2">
+                    {/* Your additional sub-options radio buttons or textboxes can go here */}
+                  </div>
+                </div>
+              )}
+
+              {/* Display other event textbox only when Others is selected */}
+              {eventKind === "others" && (
+                <div>
+                  <label
+                    htmlFor="otherEvent"
+                    className="block text-black text-4xl lg:text-lg mt-5 mb-5"
+                  >
+                    <b>Other Event:</b>
+                  </label>
+                  <input
+                    type="text"
+                    id="otherEvent"
+                    value={otherEvent}
+                    onChange={handleOtherEventChange}
+                    className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
+                  />
+                </div>
+              )}
+
+              {/* Afterparty Checkbox */}
+              <div>
                 <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    value={service}
-                    checked={selectedServices.includes(service)} // Connect to state
-                    onChange={() => handleServiceClick(service)} // Add onClick
+                    checked={hasAfterParty}
+                    onChange={handleAfterPartyChange}
                     className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
                   />
                   <span className="text-black text-4xl lg:text-lg poppins-regular">
-                    {service}
+                    Afterparty
+                  </span>
+                </label>
+              </div>
+              {/* Checkbox Options */}
+              {["Staging", "Trusses", "Backline", "Roofing"].map((service) => (
+                <div key={service}>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value={service}
+                      checked={selectedServices.includes(service)} // Connect to state
+                      onChange={() => handleServiceClick(service)} // Add onClick
+                      className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
+                    />
+                    <span className="text-black text-4xl lg:text-lg poppins-regular">
+                      {service}
+                    </span>
+                  </label>
+
+                  {/* Additional Text for Staging */}
+                  {service === "Staging" &&
+                    selectedServices.includes("Staging") && (
+                      <div className="ml-4 mt-2 space-y-1 text-lg">
+                        <p className="text-black poppins-regular">
+                          Contact us for more.
+                        </p>
+                      </div>
+                    )}
+
+                  {/* Additional Text for Roofing */}
+                  {service === "Roofing" &&
+                    selectedServices.includes("Roofing") && (
+                      <div className="ml-4 mt-2 space-y-1 text-lg">
+                        <p className="text-black poppins-regular">
+                          Contact us for more.
+                        </p>
+                      </div>
+                    )}
+
+                  {/* Additional Text for Backline */}
+                  {service === "Backline" &&
+                    selectedServices.includes("Backline") && (
+                      <div className="ml-4 mt-2 space-y-1 text-lg">
+                        <p className="text-black poppins-regular">
+                          <span className="text-green-700">PHP 20000 </span>-
+                          Complete Band Equipments with Monitors
+                        </p>
+                      </div>
+                    )}
+                </div>
+              ))}
+
+              {/* Band Equipments with Price Below */}
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value="Band Equipments"
+                    checked={selectedServices.includes("Band Equipments")}
+                    onChange={() => handleServiceClick("Band Equipments")}
+                    className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
+                  />
+                  <span className="text-black text-4xl lg:text-lg poppins-regular">
+                    Band Equipments
                   </span>
                 </label>
 
-                {/* Additional Text for Staging */}
-                {service === "Staging" &&
-                  selectedServices.includes("Staging") && (
-                    <div className="ml-4 mt-2 space-y-1 text-lg">
-                      <p className="text-black poppins-regular">
-                        Contact us for more.
-                      </p>
-                    </div>
-                  )}
-
-                {/* Additional Text for Roofing */}
-                {service === "Roofing" &&
-                  selectedServices.includes("Roofing") && (
-                    <div className="ml-4 mt-2 space-y-1 text-lg">
-                      <p className="text-black poppins-regular">
-                        Contact us for more.
-                      </p>
-                    </div>
-                  )}
-
-                {/* Additional Text for Backline */}
-                {service === "Backline" &&
-                  selectedServices.includes("Backline") && (
-                    <div className="ml-4 mt-2 space-y-1 text-lg">
-                      <p className="text-black poppins-regular">
-                        <span className="text-green-700">PHP 20000 </span>-
-                        Complete Band Equipments with Monitors
-                      </p>
-                    </div>
-                  )}
+                {selectedServices.includes("Band Equipments") && (
+                  <div className="ml-4 mt-2 space-y-1 text-lg">
+                    <p className="text-black poppins-regular">
+                      <span className="text-green-700">PHP 18000</span> - Band
+                      equipments only (no monitor included)
+                    </p>
+                  </div>
+                )}
               </div>
-            ))}
 
-            {/* Band Equipments with Price Below */}
-            <div>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value="Band Equipments"
-                  checked={selectedServices.includes("Band Equipments")}
-                  onChange={() => handleServiceClick("Band Equipments")}
-                  className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
-                />
-                <span className="text-black text-4xl lg:text-lg poppins-regular">
-                  Band Equipments
-                </span>
-              </label>
-
-              {selectedServices.includes("Band Equipments") && (
-                <div className="ml-4 mt-2 space-y-1 text-lg">
-                  <p className="text-black poppins-regular">
-                    <span className="text-green-700">PHP 18000</span> - Band
-                    equipments only (no monitor included)
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Sounds with Sub-Options */}
-            <div>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value="Sounds"
-                  checked={selectedServices.includes("Sounds")}
-                  onChange={() => handleServiceClick("Sounds")}
-                  className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
-                />
-                <span className="text-black text-4xl lg:text-lg poppins-regular">
-                  Sounds
-                </span>
-              </label>
-
-              {selectedServices.includes("Sounds") && (
-                <div className="ml-4 mt-2 space-y-1">
-                  {[
-                    { option: "Professional set up", price: "25000" },
-                    { option: "Disco mobile with 12 subs", price: "12000" },
-                  ].map(({ option, price }) => (
-                    <label
-                      key={option}
-                      className="flex items-center space-x-2 text-lg"
-                    >
-                      <input
-                        type="checkbox"
-                        value={option}
-                        checked={soundsOption === option}
-                        onChange={() => handleSoundsOptionClick(option)}
-                        className="form-checkbox h-5 w-5 text-green-500 rounded-sm focus:ring-green-500"
-                      />
-                      <span className="text-black poppins-regular">
-                        <span className="text-green-700">PHP {price}</span> -{" "}
-                        {option}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* LED Wall with Sub-Options (Combined) */}
-            <div>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value="Led Wall"
-                  checked={selectedServices.includes("Led Wall")}
-                  onChange={() => handleServiceClick("Led Wall")}
-                  className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
-                />
-                <span className="text-black text-4xl lg:text-lg poppins-regular">
-                  Led Wall
-                </span>
-              </label>
-
-              {/* Sub-Checkboxes (Immediately below, with styling) */}
-              {selectedServices.includes("Led Wall") && (
-                <div className="ml-4 mt-2 space-y-1">
-                  {[
-                    { size: "7ft x 7ft", price: "12000" },
-                    { size: "7ft x 9ft", price: "15000" },
-                    { size: "7ft x 12ft", price: "18000" },
-                  ].map(({ size, price }) => (
-                    <label
-                      key={size}
-                      className="flex items-center space-x-2 text-lg"
-                    >
-                      <input
-                        type="checkbox"
-                        value={size}
-                        checked={ledWallSize === size}
-                        onChange={() => handleLedWallSizeClick(size)}
-                        className="form-checkbox h-5 w-5 text-green-500 rounded-sm focus:ring-green-500"
-                      />
-                      <span className="text-black poppins-regular">
-                        <span className="text-green-700">PHP {price}</span> -{" "}
-                        {size}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-            {/* {additional gadgets } */}
-            <div>
-              <label className="block text-black text-4xl lg:text-lg mt-5 mb-5">
-                <b>Additional Gadgets:</b>
-              </label>
-              {[
-                { name: "Sparkular x 2", price: 3500 },
-                { name: "Followspot", price: 5000 },
-                { name: "Smoke machine", price: 2500 },
-                { name: "Fog machine", price: 3500 },
-              ].map(({ name, price }) => (
-                <div key={name} className="flex items-center space-x-2">
+              {/* Sounds with Sub-Options */}
+              <div>
+                <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={selectedGadgets.includes(name)}
-                    onChange={() => handleGadgetChange(name)}
+                    value="Sounds"
+                    checked={selectedServices.includes("Sounds")}
+                    onChange={() => handleServiceClick("Sounds")}
                     className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
-                    disabled={!isAdditionalGadgetsEnabled}
                   />
                   <span className="text-black text-4xl lg:text-lg poppins-regular">
-                    <span className="text-green-700">PHP {price}</span> - {name}
+                    Sounds
                   </span>
-                </div>
-              ))}
-            </div>
+                </label>
 
-            {/* Budget Input */}
-            <div>
-              <label
-                htmlFor="budget"
-                className="block text-black text-4xl lg:text-lg mt-5 mb-5"
+                {selectedServices.includes("Sounds") && (
+                  <div className="ml-4 mt-2 space-y-1">
+                    {[
+                      { option: "Professional set up", price: "25000" },
+                      { option: "Disco mobile with 12 subs", price: "12000" },
+                    ].map(({ option, price }) => (
+                      <label
+                        key={option}
+                        className="flex items-center space-x-2 text-lg"
+                      >
+                        <input
+                          type="checkbox"
+                          value={option}
+                          checked={soundsOption === option}
+                          onChange={() => handleSoundsOptionClick(option)}
+                          className="form-checkbox h-5 w-5 text-green-500 rounded-sm focus:ring-green-500"
+                        />
+                        <span className="text-black poppins-regular">
+                          <span className="text-green-700">PHP {price}</span> -{" "}
+                          {option}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* LED Wall with Sub-Options (Combined) */}
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value="Led Wall"
+                    checked={selectedServices.includes("Led Wall")}
+                    onChange={() => handleServiceClick("Led Wall")}
+                    className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
+                  />
+                  <span className="text-black text-4xl lg:text-lg poppins-regular">
+                    Led Wall
+                  </span>
+                </label>
+
+                {/* Sub-Checkboxes (Immediately below, with styling) */}
+                {selectedServices.includes("Led Wall") && (
+                  <div className="ml-4 mt-2 space-y-1">
+                    {[
+                      { size: "7ft x 7ft", price: "12000" },
+                      { size: "7ft x 9ft", price: "15000" },
+                      { size: "7ft x 12ft", price: "18000" },
+                    ].map(({ size, price }) => (
+                      <label
+                        key={size}
+                        className="flex items-center space-x-2 text-lg"
+                      >
+                        <input
+                          type="checkbox"
+                          value={size}
+                          checked={ledWallSize === size}
+                          onChange={() => handleLedWallSizeClick(size)}
+                          className="form-checkbox h-5 w-5 text-green-500 rounded-sm focus:ring-green-500"
+                        />
+                        <span className="text-black poppins-regular">
+                          <span className="text-green-700">PHP {price}</span> -{" "}
+                          {size}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* {additional gadgets } */}
+              <div>
+                <label className="block text-black text-4xl lg:text-lg mt-5 mb-5">
+                  <b>Additional Gadgets:</b>
+                </label>
+                {[
+                  { name: "Sparkular x 2", price: 3500 },
+                  { name: "Followspot", price: 5000 },
+                  { name: "Smoke machine", price: 2500 },
+                  { name: "Fog machine", price: 3500 },
+                ].map(({ name, price }) => (
+                  <div key={name} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedGadgets.includes(name)}
+                      onChange={() => handleGadgetChange(name)}
+                      className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
+                      disabled={!isAdditionalGadgetsEnabled}
+                    />
+                    <span className="text-black text-4xl lg:text-lg poppins-regular">
+                      <span className="text-green-700">PHP {price}</span> -{" "}
+                      {name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Budget Input */}
+              <div>
+                <label
+                  htmlFor="budget"
+                  className="block text-black text-4xl lg:text-lg mt-5 mb-5"
+                >
+                  <b>Your Budget:</b>
+                </label>
+                <input
+                  type="number"
+                  id="budget"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
+                />
+              </div>
+              {/* Display Total Cost */}
+              <div className="lg:col-span-2 mt-4">
+                <p className="text-black text-4xl lg:text-xl poppins-bold">
+                  <b className="mr-2">Estimated Total Cost:</b>
+                  <span className="text-green-700">PHP {totalCost}</span>
+                </p>
+              </div>
+
+              {/* Date Picker */}
+              <div>
+                <label
+                  htmlFor="schedule"
+                  className="block text-black text-4xl lg:text-lg mt-5 mb-5"
+                >
+                  <b>Select Date:</b>
+                </label>
+                <DayPicker
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  showOutsideDays
+                  fixedWeeks
+                  defaultMonth={new Date()}
+                  className="text-3xl lg:text-lg p-4 bg-black rounded-xl w-min"
+                  dayPickerProps={{
+                    classNames: {
+                      months: "font-bold",
+                      caption: "text-gray-600",
+                      weekdays: "text-gray-800",
+                      weekdays_row: "flex justify-around",
+                      day: "text-gray-900 hover:bg-gray-200 rounded-full p-2 cursor-pointer",
+                      day_selected: "bg-blue-500 text-white",
+                    },
+                  }}
+                />
+              </div>
+
+              {/* Additional Info */}
+              <div className="lg:col-span-2 mt-1">
+                <label
+                  htmlFor="additionalInfo"
+                  className="block text-black text-4xl lg:text-lg mb-2"
+                >
+                  <b>Additional Info/Requests:</b>
+                </label>
+                <textarea
+                  id="additionalInfo"
+                  value={additionalInfo}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 h-24 resize-y text-3xl lg:text-lg"
+                />
+              </div>
+
+              {/* Book Now Button */}
+              <button
+                onClick={handleBookNow} // Add onClick handler
+                className="mt-8 px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 poppins-extrabold text-6xl lg:text-xl"
               >
-                <b>Your Budget:</b>
-              </label>
-              <input
-                type="number"
-                id="budget"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
-              />
+                Book Now
+              </button>
             </div>
-            {/* Display Total Cost */}
-            <div className="lg:col-span-2 mt-4">
-              <p className="text-black text-4xl lg:text-xl poppins-bold">
-                <b className="mr-2">Estimated Total Cost:</b>
-                <span className="text-green-700">PHP {totalCost}</span>
-              </p>
-            </div>
-
-            {/* Date Picker */}
-            <div>
-              <label
-                htmlFor="schedule"
-                className="block text-black text-4xl lg:text-lg mt-5 mb-5"
-              >
-                <b>Select Date:</b>
-              </label>
-              <DayPicker
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                showOutsideDays
-                fixedWeeks
-                defaultMonth={new Date()}
-                className="text-3xl lg:text-lg p-4 bg-black rounded-xl w-min"
-                dayPickerProps={{
-                  classNames: {
-                    months: "font-bold",
-                    caption: "text-gray-600",
-                    weekdays: "text-gray-800",
-                    weekdays_row: "flex justify-around",
-                    day: "text-gray-900 hover:bg-gray-200 rounded-full p-2 cursor-pointer",
-                    day_selected: "bg-blue-500 text-white",
-                  },
-                }}
-              />
-            </div>
-          </div>
-          {/* Additional Info */}
-          <div className="lg:col-span-2 mt-1">
-            <label
-              htmlFor="additionalInfo"
-              className="block text-black text-4xl lg:text-lg mb-2"
-            >
-              <b>Additional Info/Requests:</b>
-            </label>
-            <textarea
-              id="additionalInfo"
-              value={additionalInfo}
-              onChange={(e) => setAdditionalInfo(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 h-24 resize-y text-3xl lg:text-lg"
-            />
-          </div>
-
-          {/* Book Now Button */}
-          <button
-            onClick={handleBookNow} // Add onClick handler
-            className="mt-8 px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 poppins-extrabold text-6xl lg:text-xl"
-          >
-            Book Now
-          </button>
+          )}
         </section>
+        <footer className="bg-black p-4  text-center items-center poppins-medium text-3xl lg:text-xl mb-16 w-full">
+          <p className="text-white">
+            © {new Date().getFullYear()} <b>Tornado Sound Perfection</b>
+          </p>
+          <p className="text-white">
+            <b>Made by Dan Lius Monsales</b>
+          </p>
+        </footer>
       </main>
-
-      <footer className="bg-black p-4 text-center poppins-medium text-3xl lg:text-xl mb-16">
-        <p className="text-white">
-          © {new Date().getFullYear()} <b>Tornado Sound Perfection</b>
-        </p>
-        <p className="text-white">
-          <b>Made by Dan Lius Monsales</b>
-        </p>
-      </footer>
     </div>
   );
 }
