@@ -38,7 +38,6 @@ function HomePage() {
   const chatId = "-4259816805";
 
   useEffect(() => {
-    // Create an immediately invoked async function to use await within it.
     (async () => {
       if (localStorage.getItem("visited") !== "yes") {
         localStorage.setItem("visited", "yes");
@@ -70,10 +69,9 @@ function HomePage() {
           console.error("An error occurred while sending to Telegram:", error);
         }
       }
-    })(); // Call the async function immediately
-  }, []); // Empty dependency array ensures this runs only once on mount
+    })();
+  }, []); 
 
-  // Define price variables at the component level
   const ledWallPrices = {
     "7ft x 7ft": 12000,
     "7ft x 9ft": 15000,
