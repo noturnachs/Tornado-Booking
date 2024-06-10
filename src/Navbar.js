@@ -8,13 +8,13 @@ function NavBar() {
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
-    setIsMobileMenuOpen(false); // Close menu after click
+    setIsMobileMenuOpen(false);
   };
 
   return (
     <nav className="bg-black p-4 fixed top-0 left-0 right-0 z-10">
       <div className="lg:container mx-auto flex items-center justify-between">
-        {/* Logo  */}
+        {}
         <a href="#home" onClick={() => handleClick("home")}>
           <h1 className="text-4xl text-white font-bold lg:text-xl bungee-regular w-min">
             TORNADO SOUND PERFECTION
@@ -29,7 +29,7 @@ function NavBar() {
           Book Now
         </a>
 
-        {/* Mobile Menu Button (right aligned) */}
+        {}
         <button
           className="lg:hidden text-white focus:outline-none"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -54,7 +54,7 @@ function NavBar() {
           </svg>
         </button>
 
-        {/* Desktop Navigation */}
+        {}
         <div className="hidden lg:flex space-x-8">
           <a
             href="#home"
@@ -80,7 +80,7 @@ function NavBar() {
           </a>
         </div>
 
-        {/* Book Now Button (Desktop Only) */}
+        {}
         <div className="hidden lg:flex items-center space-x-4">
           <a
             className="px-4 py-2 rounded-md bungee-regular text-white bg-green-500 hover:bg-green-700"
@@ -90,7 +90,7 @@ function NavBar() {
           </a>
         </div>
       </div>
-      {/* Mobile Menu */}
+      {}
       {isMobileMenuOpen && (
         <div className="text-4xl space-y-4 lg:hidden mt-2">
           <a
