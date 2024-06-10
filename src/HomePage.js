@@ -70,7 +70,7 @@ function HomePage() {
         }
       }
     })();
-  }, []); 
+  }, []);
 
   const ledWallPrices = {
     "7ft x 7ft": 12000,
@@ -82,13 +82,11 @@ function HomePage() {
     "Disco mobile with 12 subs": 12000,
   };
 
-  // Combined Price Information (single variable)
   const prices = {
     ledWall: ledWallPrices,
     sounds: soundsPrices,
   };
 
-  // Calculate if any of the required services are selected
   const isAdditionalGadgetsEnabled = selectedServices.some((service) =>
     [
       "Staging",
@@ -134,9 +132,8 @@ function HomePage() {
   ) => {
     let cost = 0;
 
-    // Initialize with default or zero value
-    ledSize = ledSize || "7ft x 7ft"; // Default to the smallest LED wall size
-    soundOption = soundOption || "Professional set up"; // Default to Professional setup
+    ledSize = ledSize || "7ft x 7ft";
+    soundOption = soundOption || "Professional set up";
 
     services.forEach((service) => {
       switch (service) {
@@ -157,7 +154,6 @@ function HomePage() {
       }
     });
 
-    // Add the cost of selected gadgets
     selectedGadgets.forEach((gadget) => {
       switch (gadget) {
         case "Sparkular x 2":
@@ -186,9 +182,8 @@ function HomePage() {
 
   const handleSoundsOptionClick = (option) => {
     if (setupType === "") {
-      // Check if setupType is selected
       alert("Please select a Setup Type first.");
-      return; // Prevent selection if no setupType
+      return;
     }
     setSoundsOption(option);
     calculateTotalCost(selectedServices, ledWallSize, option);
@@ -311,8 +306,6 @@ Estimated Total Cost: PHP ${totalCost}
       document.body.removeChild(tempTextArea);
     }
 
-    // *** Send message to Telegram group chat ***
-
     try {
       const response = await fetch(
         `https://api.telegram.org/bot${botToken}/sendMessage`,
@@ -376,7 +369,7 @@ Estimated Total Cost: PHP ${totalCost}
     s.removeAllRanges();
     s.addRange(range);
 
-    el.setSelectionRange(0, 999999); // A big number, to cover anything that could be inside the element.
+    el.setSelectionRange(0, 999999);
 
     el.contentEditable = oldContentEditable;
     el.readOnly = oldReadOnly;
@@ -470,7 +463,6 @@ Estimated Total Cost: PHP ${totalCost}
             What Sets Us Apart
           </h2>
           <ul className="text-4xl space-y-7 lg:text-lg lg:space-y-4 leading-normal">
-            {/* Bullet Points */}
             <li>
               <b>Curated Soundtracks:</b> We understand that every event has its
               own personality. Our DJs are masters at reading the crowd,
@@ -578,7 +570,6 @@ Estimated Total Cost: PHP ${totalCost}
             </div>
           </div>
 
-          {/* Image Modal (Overlay) */}
           {selectedImage && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
@@ -624,7 +615,6 @@ Estimated Total Cost: PHP ${totalCost}
               target="_blank"
               rel="noreferrer"
               className="flex flex-row"
-              // Add some margin-top for spacing
             >
               <FaFacebook
                 className="text-blue-500 hover:text-blue-700"
@@ -638,11 +628,10 @@ Estimated Total Cost: PHP ${totalCost}
           <h2 className="text-6xl lg:text-4xl font-bold mb-4 text-black">
             Book Now
           </h2>
-          {/* Popup Message */}
+
           {showPopup && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
               <div className="bg-white p-6 rounded-md text-center">
-                {/* GIF Instruction Video */}
                 <img
                   src={instructionGif}
                   alt="Instruction Video"
@@ -654,7 +643,6 @@ Estimated Total Cost: PHP ${totalCost}
                   messenger. You will now be redirected to Facebook Messenger.
                 </p>
 
-                {/* OK Button */}
                 <button
                   onClick={handleConfirmRedirect}
                   className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -665,7 +653,7 @@ Estimated Total Cost: PHP ${totalCost}
             </div>
           )}
 
-          {!showForm && ( // Show name/contact form initially
+          {!showForm && (
             <div>
               <label
                 htmlFor="fullName"
@@ -747,7 +735,6 @@ Estimated Total Cost: PHP ${totalCost}
                 </select>
               </div>
 
-              {/* Display additional options only when Professional Setup or Mobile Setup is selected */}
               {showSubOptions && (
                 <div>
                   <label
@@ -761,13 +748,10 @@ Estimated Total Cost: PHP ${totalCost}
                       Options:
                     </b>
                   </label>
-                  <div className="flex flex-col space-y-2">
-                    {/* Your additional sub-options radio buttons or textboxes can go here */}
-                  </div>
+                  <div className="flex flex-col space-y-2"></div>
                 </div>
               )}
 
-              {/* Display other event textbox only when Others is selected */}
               {eventKind === "others" && (
                 <div>
                   <label
@@ -786,7 +770,6 @@ Estimated Total Cost: PHP ${totalCost}
                 </div>
               )}
 
-              {/* Afterparty Checkbox */}
               <div>
                 <label className="flex items-center space-x-2">
                   <input
@@ -800,15 +783,14 @@ Estimated Total Cost: PHP ${totalCost}
                   </span>
                 </label>
               </div>
-              {/* Checkbox Options */}
               {["Staging", "Trusses", "Backline", "Roofing"].map((service) => (
                 <div key={service}>
                   <label className="flex items-center space-x-2">
                     <input
                       type="checkbox"
                       value={service}
-                      checked={selectedServices.includes(service)} // Connect to state
-                      onChange={() => handleServiceClick(service)} // Add onClick
+                      checked={selectedServices.includes(service)}
+                      onChange={() => handleServiceClick(service)}
                       className="form-checkbox h-8 w-8 text-green-500 rounded-sm focus:ring-green-500"
                     />
                     <span className="text-black text-4xl lg:text-lg poppins-regular">
@@ -816,7 +798,6 @@ Estimated Total Cost: PHP ${totalCost}
                     </span>
                   </label>
 
-                  {/* Additional Text for Staging */}
                   {service === "Staging" &&
                     selectedServices.includes("Staging") && (
                       <div className="ml-4 mt-2 space-y-1 text-lg">
@@ -826,7 +807,6 @@ Estimated Total Cost: PHP ${totalCost}
                       </div>
                     )}
 
-                  {/* Additional Text for Roofing */}
                   {service === "Roofing" &&
                     selectedServices.includes("Roofing") && (
                       <div className="ml-4 mt-2 space-y-1 text-lg">
@@ -836,7 +816,6 @@ Estimated Total Cost: PHP ${totalCost}
                       </div>
                     )}
 
-                  {/* Additional Text for Backline */}
                   {service === "Backline" &&
                     selectedServices.includes("Backline") && (
                       <div className="ml-4 mt-2 space-y-1 text-lg">
@@ -849,7 +828,6 @@ Estimated Total Cost: PHP ${totalCost}
                 </div>
               ))}
 
-              {/* Band Equipments with Price Below */}
               <div>
                 <label className="flex items-center space-x-2">
                   <input
@@ -874,7 +852,6 @@ Estimated Total Cost: PHP ${totalCost}
                 )}
               </div>
 
-              {/* Sounds with Sub-Options */}
               <div>
                 <label className="flex items-center space-x-2">
                   <input
@@ -916,7 +893,6 @@ Estimated Total Cost: PHP ${totalCost}
                 )}
               </div>
 
-              {/* LED Wall with Sub-Options (Combined) */}
               <div>
                 <label className="flex items-center space-x-2">
                   <input
@@ -931,7 +907,6 @@ Estimated Total Cost: PHP ${totalCost}
                   </span>
                 </label>
 
-                {/* Sub-Checkboxes (Immediately below, with styling) */}
                 {selectedServices.includes("Led Wall") && (
                   <div className="ml-4 mt-2 space-y-1">
                     {[
@@ -959,7 +934,7 @@ Estimated Total Cost: PHP ${totalCost}
                   </div>
                 )}
               </div>
-              {/* {additional gadgets } */}
+
               <div>
                 <label className="block text-black text-4xl lg:text-lg mt-5 mb-5">
                   <b>Additional Gadgets:</b>
@@ -986,7 +961,6 @@ Estimated Total Cost: PHP ${totalCost}
                 ))}
               </div>
 
-              {/* Budget Input */}
               <div>
                 <label
                   htmlFor="budget"
@@ -1002,7 +976,7 @@ Estimated Total Cost: PHP ${totalCost}
                   className="w-full px-4 py-2 border rounded-md text-black focus:outline-none focus:ring focus:border-blue-300 text-4xl lg:text-lg"
                 />
               </div>
-              {/* Display Total Cost */}
+
               <div className="lg:col-span-2 mt-4">
                 <p className="text-black text-4xl lg:text-xl poppins-bold">
                   <b className="mr-2">Estimated Total Cost:</b>
@@ -1010,7 +984,6 @@ Estimated Total Cost: PHP ${totalCost}
                 </p>
               </div>
 
-              {/* Date Picker */}
               <div>
                 <label
                   htmlFor="schedule"
@@ -1039,7 +1012,6 @@ Estimated Total Cost: PHP ${totalCost}
                 />
               </div>
 
-              {/* Additional Info */}
               <div className="lg:col-span-2 mt-1">
                 <label
                   htmlFor="additionalInfo"
@@ -1055,9 +1027,8 @@ Estimated Total Cost: PHP ${totalCost}
                 />
               </div>
 
-              {/* Book Now Button */}
               <button
-                onClick={handleBookNow} // Add onClick handler
+                onClick={handleBookNow}
                 className="mt-8 px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 poppins-extrabold text-6xl lg:text-xl"
               >
                 Book Now
